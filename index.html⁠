@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mebel Hisob-Kitob</title>
+<meta name="theme-color" content="#20252b">
+<link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Mebel%20Hisob-Kitob%22%2C%22short_name%22%3A%22MebelCalc%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f3f4f6%22%2C%22theme_color%22%3A%22%2320252b%22%7D">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f3f4f6;color:#222;user-select:none}
+header{background:#20252b;color:white;padding:20px 24px;font-size:22px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.container{max-width:1100px;margin:20px auto;padding:0 15px}
+h1{font-size:26px;margin:0 0 20px;text-transform:uppercase}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px}
+button{border:0;border-radius:12px;padding:20px 16px;font-size:17px;font-weight:600;background:white;box-shadow:0 3px 10px #00000012;cursor:pointer;transition:.15s;text-align:center}
+button:active{transform:scale(0.98)}
+.back{background:#20252b;color:white;margin-bottom:18px;padding:10px 18px;border-radius:8px;font-size:15px}
+.card{background:white;border-radius:14px;padding:20px;box-shadow:0 3px 10px #00000010}
+.item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #eee;font-size:16px}
+.item:last-child{border-bottom:0}
+.hidden{display:none}
+.qty{width:110px;padding:10px;border:1px solid #d7dbe0;border-radius:8px;font-size:16px;outline:none;text-align:center}
+.qty:focus{border-color:#3b82f6;box-shadow:0 0 0 3px #3b82f622}
+.actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.actions button{padding:12px 20px;font-size:15px;flex:1}
+.save{background:#20252b;color:white}
+.clear{background:#e5e7eb;color:#374151}
+.print{background:#2563eb;color:white}
+#savedMsg{margin-top:12px;color:#16803c;font-weight:600;text-align:center}
+
+@media print {
+  header, .back, .actions, .grid {display:none !important}
+  .hidden {display:none !important}
+  section:not(.hidden) {display:block !important}
+  .card {box-shadow:none;padding:0}
+  .qty {border:none;font-weight:bold}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <span>🪑 MEBEL HISOB-KITOB</span>
+</header>
+
+<div class="container">
+  <!-- 1. BOSH SAHIFA -->
+  <section id="home">
+    <h1>Mebel turini tanlang</h1>
+    <div class="grid">
+      <button onclick="openKitchenMenu()">🍳 Oshxona mebellari</button>
+      <button onclick="alert('Bu bo‘lim keyingi bosqichda qo‘shiladi.')">🛏 Yotoqxona mebellari</button>
+      <button onclick="alert('Bu bo‘lim keyingi bosqichda qo‘shiladi.')">👶 Bolalar uchun mebellar</button>
+      <button onclick="alert('Bu bo‘lim keyingi bosqichda qo‘shiladi.')">🚪 Kupеnniy shkaf</button>
+      <button onclick="alert('Bu bo‘lim keyingi bosqichda qo‘shiladi.')">🗄 Eshikli shkaf</button>
+    </div>
+  </section>
+
+  <!-- 2. OSHXONA BO'LIMLARI SAHIFASI -->
+  <section id="kitchen" class="hidden">
+    <button class="back" onclick="goHome()">← Bosh sahifa</button>
+    <h1>OSHXONA MEBELI</h1>
+    <div id="categoryGrid" class="grid"></div>
+  </section>
+
+  <!-- 3. BO'LIM ICHIDAGI MATERIAL VA FURNITURALAR -->
+  <section id="items" class="hidden">
+    <button class="back" onclick="goKitchen()">← Oshxona bo‘limlariga</button>
+    <h1 id="itemsTitle"></h1>
+    <div class="card">
+      <div id="itemsList"></div>
+      <div class="actions">
+        <button class="save" onclick="saveItems()">💾 Saqlash</button>
+        <button class="print" onclick="window.print()">🖨 PDF / Pechat</button>
+        <button class="clear" onclick="clearItems()">🗑 Tozalash</button>
+      </div>
+      <div id="savedMsg"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+const data = {
+  "Plita va fasad": ["LDSP","MDF","Akrel","Akrel 2","XDPV"],
+  "Kromkalar": ["19/1","21/1","35/1","42/1"],
+  "Stoleshnitsa": ["Tekstalet tosh","Tekstalet rus 3sm","Textalet rus 4sm","Tekstalet 90sm"],
+  "Petlyalar": ["Pol garbat petli","Polniy garbat petli","Pryamoy petli","45° petlya"],
+  "Salyaskalar": ["Salyaska vakum 40li","Salyaska vakum 35","Salyaska vakum 30","Salyaska oddiy 40","Salyaska oddiy 35","Salyaska oddiy 30"],
+  "Tandem": ["Tandem 45","Tandem 40","Tandem 30"],
+  "Ruchkalar": ["Ruchka 80sm","Ruchka 16 sm","Gola","Gola ugolnik"],
+  "Oyoqlar": ["Oyoq xitoy","Oyoq toshkent","Bortik","30x30"],
+  "Moykalar": ["Moyka to‘rtburchak","Moyka dumaloq","Moyka full"],
+  "Boshqa furnituralar": ["Sushelka","Evro vint 4li","Evro vint 6li","Samarezlar","Mix","Oyna","Silikon kley"]
+};
+
+function openKitchenMenu(){
+  document.getElementById('home').classList.add('hidden');
+  document.getElementById('kitchen').classList.remove('hidden');
+  const grid = document.getElementById('categoryGrid');
+  grid.innerHTML = '';
+  
+  Object.keys(data).forEach(cat => {
+    const b = document.createElement('button');
+    b.textContent = `[ ${cat} ]`;
+    b.onclick = () => openItems(cat);
+    grid.appendChild(b);
+  });
+}
+
+function openItems(cat){
+  document.getElementById('kitchen').classList.add('hidden');
+  document.getElementById('items').classList.remove('hidden');
+  document.getElementById('itemsTitle').textContent = cat;
+  document.getElementById('savedMsg').textContent = '';
+  
+  const savedData = JSON.parse(localStorage.getItem('mebel_' + cat) || '{}');
+
+  document.getElementById('itemsList').innerHTML = data[cat].map((x, i) => {
+    const val = savedData[x] || '';
+    return `<div class="item">
+      <span>${i+1}. ${x}</span>
+      <input class="qty" type="number" min="0" step="0.01" placeholder="0" data-name="${x}" value="${val}">
+    </div>`;
+  }).join('');
+}
+
+function goHome(){
+  document.getElementById('kitchen').classList.add('hidden');
+  document.getElementById('items').classList.add('hidden');
+  document.getElementById('home').classList.remove('hidden');
+}
+
+function goKitchen(){
+  document.getElementById('items').classList.add('hidden');
+  document.getElementById('kitchen').classList.remove('hidden');
+}
+
+function saveItems(){
+  const cat = document.getElementById('itemsTitle').textContent;
+  const values = {};
+  document.querySelectorAll('.qty').forEach(input => {
+    if(input.value) values[input.dataset.name] = input.value;
+  });
+  localStorage.setItem('mebel_' + cat, JSON.stringify(values));
+  document.getElementById('savedMsg').textContent = '✓ Muvaffaqiyatli saqlandi';
+}
+
+function clearItems(){
+  if(confirm("Haqiqatan ham barcha miqdorlarni tozalamoqchimisiz?")){
+    document.querySelectorAll('.qty').forEach(input => input.value = '');
+    const cat = document.getElementById('itemsTitle').textContent;
+    localStorage.removeItem('mebel_' + cat);
+    document.getElementById('savedMsg').textContent = 'Tozalandi';
+  }
+}
+</script>
+</body>
+</html>
