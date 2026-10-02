@@ -45,7 +45,7 @@ button:active{transform:scale(0.98)}
 </header>
 
 <div class="container">
-  <!-- 1. BOSH SAHIFA -->
+  <!-- BOSH SAHIFA -->
   <section id="home">
     <h1>Mebel turini tanlang</h1>
     <div class="grid">
@@ -57,14 +57,14 @@ button:active{transform:scale(0.98)}
     </div>
   </section>
 
-  <!-- 2. OSHXONA BO'LIMLARI SAHIFASI -->
+  <!-- OSHXONA BO'LIMLARI SAHIFASI -->
   <section id="kitchen" class="hidden">
     <button class="back" onclick="goHome()">← Bosh sahifa</button>
     <h1>OSHXONA MEBELI</h1>
     <div id="categoryGrid" class="grid"></div>
   </section>
 
-  <!-- 3. BO'LIM ICHIDAGI MATERIAL VA FURNITURALAR -->
+  <!-- BO'LIM ICHIDAGI MATERIAL VA FURNITURALAR -->
   <section id="items" class="hidden">
     <button class="back" onclick="goKitchen()">← Oshxona bo‘limlariga</button>
     <h1 id="itemsTitle"></h1>
@@ -157,3 +157,4 @@ function clearItems(){
 </script>
 </body>
 </html>
+
